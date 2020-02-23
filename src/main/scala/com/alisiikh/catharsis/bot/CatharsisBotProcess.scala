@@ -21,7 +21,7 @@ class CatharsisBotProcess[F[_]: Logger: Timer](token: String, giphyApiKey: Strin
     jsonOf[F, BotResponse[List[BotUpdate]]]
 
   def stream: Stream[F, Unit] =
-    BlazeClientBuilder[F](ExecutionContext.global).withDefaultSslContext.stream
+    BlazeClientBuilder[F](ExecutionContext.global).stream
       .flatMap { client =>
         Stream.force {
           for {
