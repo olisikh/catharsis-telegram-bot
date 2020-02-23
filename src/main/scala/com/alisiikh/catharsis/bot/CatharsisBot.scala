@@ -14,21 +14,16 @@ class CatharsisBot[F[_]: Timer](api: StreamBotApi[F], giphy: GiphyClient[F])(
     F: Sync[F],
     logger: Logger[F]
 ) {
-  private def pollUpdates: Stream[F, (ChatId, String)] =
-    for {
-      update <- api.pollUpdates(0)
-      chatIdAndMsg <- Stream.emits(
-        update.message.flatMap(m => m.text.map(m.chat.id -> _)).toSeq
-      )
-    } yield chatIdAndMsg
 
   def stream: Stream[F, Unit] =
-    pollUpdates
-      .evalMap {
-        case (chatId, msg) =>
-          giphy
-            .randomGif(s"cat $msg")
-            .map(gifUrl => (chatId, gifUrl))
+    api
+      .pollUpdates(0)
+      .map(_.chatId.toSeq)
+      .flatMap(Stream.emits)
+      .evalMap { chatId =>
+        giphy
+          .randomGif("cat")
+          .map(gifUrl => (chatId, gifUrl))
       }
       .evalMap((api.sendAnimation _).tupled)
       .map(_ => ())

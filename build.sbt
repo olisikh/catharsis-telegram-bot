@@ -2,7 +2,6 @@ val http4sVersion = "0.21.0"
 val specs2Version = "4.8.3"
 val log4CatsVersion = "1.0.1"
 val slf4jVersion = "1.7.28"
-val kindProjectorVersion = "0.11.0"
 val circeVersion = "0.13.0"
 
 lazy val root = (project in file("."))
@@ -25,5 +24,5 @@ lazy val root = (project in file("."))
     )
   )
 
-addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorVersion cross CrossVersion.full)
-
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full)

@@ -15,11 +15,6 @@ import org.http4s.client.blaze.BlazeClientBuilder
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
-/**
-  * Creates and wires up everything that is needed to launch a [[CatharsisBot]] and launches it.
-  *
-  * @param token telegram bot token
-  */
 class CatharsisBotProcess[F[_]: Logger: Timer](token: String, giphyApiKey: String)(implicit F: ConcurrentEffect[F]) {
 
   implicit val decoder: EntityDecoder[F, BotResponse[List[BotUpdate]]] =
