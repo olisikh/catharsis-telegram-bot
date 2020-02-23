@@ -16,7 +16,9 @@ import scala.concurrent.ExecutionContext
 class CatharsisBotProcess[F[_]: Async: Temporal: Logger](token: String, giphyApiKey: String) {
 
   def stream: Stream[F, Unit] =
-    BlazeClientBuilder[F](ExecutionContext.global).stream
+    BlazeClientBuilder[F](ExecutionContext.global)
+      .withCheckEndpointAuthentication(false)
+      .stream
       .flatMap { client =>
         Stream.force {
           for {
