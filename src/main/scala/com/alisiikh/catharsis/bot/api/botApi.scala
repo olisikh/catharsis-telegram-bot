@@ -33,7 +33,7 @@ class Http4sBotApi[F[_]: Async: Temporal: Logger](token: String, client: Client[
   }
 
   def pollUpdates(offset: Offset): Stream[F, BotUpdate] =
-    Stream.empty.repeat
+    Stream(()).repeat
       .covary[F]
       .evalMapAccumulate(offset) { case (offset, _) => requestUpdates(offset) }
       .flatMap { case (_, response) => Stream.emits(response.result) }
