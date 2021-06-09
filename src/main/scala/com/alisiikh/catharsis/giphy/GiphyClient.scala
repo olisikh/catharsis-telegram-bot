@@ -1,17 +1,15 @@
 package com.alisiikh.catharsis.giphy
 
 import at.mukprojects.giphy4j.Giphy
-import cats.effect.Sync
+import cats.effect._
 import cats.implicits._
 
-import scala.language.higherKinds
-
-class GiphyClient[F[_]](apiKey: String)(implicit F: Sync[F]) extends GiphyClientAlgebra[F] {
+class GiphyClient[F[_]: Async](apiKey: String) extends GiphyClientAlgebra[F] {
 
   def randomGif(theme: String): F[String] =
     giphyClient
       .map(_.searchRandom(theme))
       .map(_.getData.getImageOriginalUrl)
 
-  private def giphyClient: F[Giphy] = F.delay(new Giphy(apiKey))
+  private def giphyClient: F[Giphy] = Sync[F].delay(new Giphy(apiKey))
 }
