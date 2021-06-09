@@ -7,13 +7,9 @@ import com.alisiikh.catharsis.giphy.GiphyClient
 import io.chrisdavenport.log4cats._
 import fs2._
 
-import scala.language.{ higherKinds, postfixOps }
+import scala.language.postfixOps
 
-class CatharsisBot[F[_]: Timer](api: StreamBotApi[F], giphy: GiphyClient[F])(
-    implicit
-    F: Sync[F],
-    logger: Logger[F]
-) {
+class CatharsisBot[F[_]: Async: Temporal: Logger](api: StreamBotApi[F], giphy: GiphyClient[F]) {
 
   def stream: Stream[F, Unit] =
     api
