@@ -3,7 +3,7 @@ package com.alisiikh.catharsis.bot.api
 import cats.effect._
 import cats.implicits._
 import fs2.Stream
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.circe.Decoder
 import org.http4s.blaze.http.Url
 import org.http4s.circe.jsonOf

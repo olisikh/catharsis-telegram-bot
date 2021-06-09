@@ -5,7 +5,7 @@ import cats.implicits._
 import com.alisiikh.catharsis.bot.api.{ BotResponse, BotUpdate, Http4sBotApi }
 import com.alisiikh.catharsis.giphy.GiphyClient
 import fs2.Stream
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.circe.generic.auto._
 import org.http4s._
 import org.http4s.blaze.client.BlazeClientBuilder

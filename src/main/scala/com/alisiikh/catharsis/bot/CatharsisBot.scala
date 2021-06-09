@@ -4,7 +4,7 @@ import cats.effect._
 import cats.implicits._
 import com.alisiikh.catharsis.bot.api._
 import com.alisiikh.catharsis.giphy.GiphyClient
-import io.chrisdavenport.log4cats._
+import org.typelevel.log4cats._
 import fs2._
 
 import scala.language.postfixOps
