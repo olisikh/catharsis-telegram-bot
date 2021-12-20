@@ -1,6 +1,5 @@
 package com.alisiikh.catharsis.bot
 
-import cats.Monad
 import cats.effect._
 import cats.implicits._
 import com.alisiikh.catharsis.bot.api._
@@ -10,7 +9,7 @@ import fs2._
 
 import scala.language.postfixOps
 
-class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyClient[F]) {
+class TelegramBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyClient[F]) {
 
   def stream: Stream[F, Unit] =
     for {
@@ -21,9 +20,10 @@ class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyC
       }
       gifResult <- Stream.eval(giphy.randomGif(s"cat $text"))
       _ <- Stream.eval(
+        // TODO: get actual gif an use sendAnimation
         gifResult.fold(
           err => Logger[F].info("sending error") *> api.sendMessage(chatId, err),
-          gif => Logger[F].info("sending animation") *> api.sendAnimation(chatId, gif)
+          gif => Logger[F].info("sending animation") *> api.sendMessage(chatId, gif)
         )
       )
     } yield ()
