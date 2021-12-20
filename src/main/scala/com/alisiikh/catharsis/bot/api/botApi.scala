@@ -1,5 +1,6 @@
 package com.alisiikh.catharsis.bot.api
 
+import cats.{ MonadError }
 import cats.effect._
 import cats.implicits._
 import com.alisiikh.catharsis.bot.BotToken
@@ -31,8 +32,10 @@ class TelegramBotApi[F[_]: Concurrent: Logger](token: BotToken, client: Client[F
       "animation" -> List(animationUrl)
     )
 
-    Logger[F].info(req.toString) *>
-      client.expect[Unit](req)
+    client.expectOr[Unit](req) { resp =>
+      Logger[F].info(s"Response from Telegram sendAnimation: $resp") *>
+        MonadError[F, Throwable].pure(new RuntimeException("oops"))
+    }
   }
 
   def sendMessage(chatId: ChatId, text: String): F[Unit] = {
@@ -41,7 +44,10 @@ class TelegramBotApi[F[_]: Concurrent: Logger](token: BotToken, client: Client[F
       "text"    -> List(text)
     )
 
-    client.expect[Unit](req)
+    client.expectOr[Unit](req) { resp =>
+      Logger[F].info(s"Response from Telegram sendMessage: $resp") *>
+        MonadError[F, Throwable].pure(new RuntimeException("oops"))
+    }
   }
 
   def pollUpdates(offset: Offset): Stream[F, BotUpdate] =
@@ -71,7 +77,7 @@ class TelegramBotApi[F[_]: Concurrent: Logger](token: BotToken, client: Client[F
   // just get the maximum id out of all received updates
   private def lastOffset(resp: BotResponse[List[BotUpdate]]): Option[Offset] = resp.result match {
     case Nil   => none
-    case other => Offset(other.maxBy(_.update_id).update_id).some
+    case other => Offset(other.maxBy(_.update_id).update_id).inc.some
   }
 }
 

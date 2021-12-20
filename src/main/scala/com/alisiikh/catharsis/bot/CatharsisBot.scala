@@ -1,6 +1,5 @@
 package com.alisiikh.catharsis.bot
 
-import cats.Monad
 import cats.effect._
 import cats.implicits._
 import com.alisiikh.catharsis.bot.api._
@@ -13,24 +12,25 @@ import scala.language.postfixOps
 class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyClient[F]) {
 
   def stream: Stream[F, Unit] =
-    api
-      .pollUpdates(Offset(-1))
-      .map { update =>
-        update.chatId.map { chatId =>
-          chatId -> update.message
-        }.toSeq
+    for {
+      upd <- api.pollUpdates(Offset(-1))
+      (chatId, text) <- Stream.fromOption {
+        (upd.chatId, upd.message.flatMap(_.text))
+          .mapN((chatId, text) => chatId -> text)
       }
-      .flatMap(Stream.emits)
-      .evalMap {
-        case (chatId, msg) =>
-          giphy
-            .randomGif(s"cat $msg")
-            .map(
-              _.fold(
-                err => api.sendMessage(chatId, err),
-                gif => api.sendAnimation(chatId, gif)
-              )
+      _ <- Stream.eval {
+        giphy
+          .randomGif(s"cat $text")
+          .map(
+            _.fold(
+              err =>
+                Logger[F].info("sending error") *>
+                  api.sendMessage(chatId, err),
+              gif =>
+                Logger[F].info("sending animation") *>
+                  api.sendMessage(chatId, gif)
             )
+          )
       }
-      .void
+    } yield ()
 }

@@ -1,7 +1,9 @@
 package com.alisiikh.catharsis.bot.api
 
 case class ChatId(value: Long) extends AnyVal
-case class Offset(value: Long) extends AnyVal
+case class Offset(value: Long) extends AnyVal {
+  def inc: Offset = copy(value = value + 1)
+}
 
 case class Chat(id: ChatId)
 
