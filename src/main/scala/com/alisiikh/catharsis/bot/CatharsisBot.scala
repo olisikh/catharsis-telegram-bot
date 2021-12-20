@@ -23,7 +23,7 @@ class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyC
       _ <- Stream.eval(
         gifResult.fold(
           err => Logger[F].info("sending error") *> api.sendMessage(chatId, err),
-          gif => Logger[F].info("sending animation") *> api.sendMessage(chatId, gif)
+          gif => Logger[F].info("sending animation") *> api.sendAnimation(chatId, gif)
         )
       )
     } yield ()
