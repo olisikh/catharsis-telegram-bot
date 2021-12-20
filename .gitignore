@@ -1,5 +1,4 @@
-*.idea
-
+.idea/
+.bsp/
 target/
 .DS_Store
-export_bot_token.sh

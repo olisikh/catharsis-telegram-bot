@@ -9,18 +9,23 @@ import fs2._
 
 import scala.language.postfixOps
 
-class CatharsisBot[F[_]: Async: Temporal: Logger](api: StreamBotApi[F], giphy: GiphyClient[F]) {
+class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyClient[F]) {
 
   def stream: Stream[F, Unit] =
     api
-      .pollUpdates(0)
-      .map(_.chatId.toSeq)
+      .pollUpdates(Offset(-1))
+      .map { update =>
+        update.chatId.map { chatId =>
+          chatId -> update.message
+        }.toSeq
+      }
       .flatMap(Stream.emits)
-      .evalMap { chatId =>
-        giphy
-          .randomGif("cat")
-          .map(gifUrl => (chatId, gifUrl))
+      .evalMap {
+        case (chatId, msg) =>
+          giphy
+            .randomGif(s"cat $msg")
+            .map(gifUrl => (chatId, gifUrl))
       }
       .evalMap((api.sendAnimation _).tupled)
-      .map(_ => ())
+      .void
 }

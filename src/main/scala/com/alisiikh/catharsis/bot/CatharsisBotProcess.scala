@@ -13,7 +13,7 @@ import org.http4s.circe._
 
 import scala.concurrent.ExecutionContext
 
-class CatharsisBotProcess[F[_]: Async: Temporal: Logger](token: String, giphyApiKey: String) {
+class CatharsisBotProcess[F[_]: Async: Logger](token: String, giphyApiKey: String) {
 
   def stream: Stream[F, Unit] =
     BlazeClientBuilder[F](ExecutionContext.global)

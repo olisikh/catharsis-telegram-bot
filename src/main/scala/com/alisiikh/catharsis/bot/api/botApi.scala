@@ -13,20 +13,20 @@ import org.http4s.{ EntityDecoder, Uri }
 import scala.language.postfixOps
 
 trait BotApi[F[_], S[_]] {
-  def sendAnimation(chatId: Long, message: String): F[Unit]
+  def sendAnimation(chatId: ChatId, message: String): F[Unit]
   def pollUpdates(offset: Offset): S[BotUpdate]
 }
 
 trait StreamBotApi[F[_]] extends BotApi[F, Stream[F, *]]
 
-class Http4sBotApi[F[_]: Async: Temporal: Logger](token: String, client: Client[F]) extends StreamBotApi[F] {
+class Http4sBotApi[F[_]: Concurrent: Logger](token: String, client: Client[F]) extends StreamBotApi[F] {
   import Http4sBotApi._
 
   private val botApiUri = Uri.unsafeFromString(s"https://api.telegram.org/bot$token")
 
-  def sendAnimation(chatId: Long, animationUrl: Url): F[Unit] = {
+  def sendAnimation(chatId: ChatId, animationUrl: Url): F[Unit] = {
     val uri = botApiUri / "sendAnimation" =? Map(
-      "chat_id"   -> List(chatId.toString),
+      "chat_id"   -> List(chatId.value.toString),
       "animation" -> List(animationUrl)
     )
     client.expect[Unit](uri)
@@ -41,7 +41,7 @@ class Http4sBotApi[F[_]: Async: Temporal: Logger](token: String, client: Client[
   private def requestUpdates(offset: Offset): F[(Offset, BotResponse[List[BotUpdate]])] = {
 
     val req = botApiUri / "getUpdates" =? Map(
-      "offset"          -> List((offset + 1).toString),
+      "offset"          -> List(offset.value.toString),
       "timeout"         -> List("0.5"), // timeout to throttle the polling
       "allowed_updates" -> List("""["message"]""")
     )
@@ -58,11 +58,10 @@ class Http4sBotApi[F[_]: Async: Temporal: Logger](token: String, client: Client[
   }
 
   // just get the maximum id out of all received updates
-  private def lastOffset(resp: BotResponse[List[BotUpdate]]): Option[Offset] =
-    resp.result match {
-      case Nil   => none
-      case other => other.maxBy(_.update_id).update_id.some
-    }
+  private def lastOffset(resp: BotResponse[List[BotUpdate]]): Option[Offset] = resp.result match {
+    case Nil   => none
+    case other => Offset(other.maxBy(_.update_id).update_id).some
+  }
 }
 
 object Http4sBotApi {
