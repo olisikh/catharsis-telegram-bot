@@ -1,5 +1,6 @@
 package com.alisiikh.catharsis.bot
 
+import cats.Monad
 import cats.effect._
 import cats.implicits._
 import com.alisiikh.catharsis.bot.api._
@@ -18,19 +19,12 @@ class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyC
         (upd.chatId, upd.message.flatMap(_.text))
           .mapN((chatId, text) => chatId -> text)
       }
-      _ <- Stream.eval {
-        giphy
-          .randomGif(s"cat $text")
-          .map(
-            _.fold(
-              err =>
-                Logger[F].info("sending error") *>
-                  api.sendMessage(chatId, err),
-              gif =>
-                Logger[F].info("sending animation") *>
-                  api.sendMessage(chatId, gif)
-            )
-          )
-      }
+      gifResult <- Stream.eval(giphy.randomGif(s"cat $text"))
+      _ <- Stream.eval(
+        gifResult.fold(
+          err => Logger[F].info("sending error") *> api.sendMessage(chatId, err),
+          gif => Logger[F].info("sending animation") *> api.sendMessage(chatId, gif)
+        )
+      )
     } yield ()
 }
