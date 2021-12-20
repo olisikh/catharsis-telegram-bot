@@ -16,10 +16,7 @@ object App extends IOApp {
     for {
       token      <- Stream.eval(IO(BotToken(System.getenv("TELEGRAM_TOKEN"))))
       giphyToken <- Stream.eval(IO(GiphyToken(System.getenv("GIPHY_TOKEN"))))
-
-      _ <- Stream.eval(unsafeLogger.info(token.value))
-      _ <- Stream.eval(unsafeLogger.info(giphyToken.value))
-      _ <- new CatharsisBotProcess[IO](token, giphyToken).stream
+      _          <- new CatharsisBotProcess[IO](token, giphyToken).stream
     } yield ()
 
   override def run(args: List[String]): IO[ExitCode] =
