@@ -18,7 +18,7 @@ class TelegramBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyCl
         (upd.chatId, upd.message.flatMap(_.text))
           .mapN((chatId, text) => chatId -> text)
       }
-      gifResult <- Stream.eval(giphy.randomGif(s"cat $text"))
+      gifResult <- Stream.eval(giphy.randomGif(s"cat ${if (text.startsWith("/")) text.drop(1) else text}"))
       _ <- Stream.eval(
         // TODO: get actual gif an use sendAnimation
         gifResult.fold(
