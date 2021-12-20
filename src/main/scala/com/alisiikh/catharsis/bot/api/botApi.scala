@@ -4,11 +4,10 @@ import cats.effect._
 import cats.implicits._
 import fs2.Stream
 import org.typelevel.log4cats.Logger
-import io.circe.Decoder
 import org.http4s.blaze.http.Url
-import org.http4s.circe.jsonOf
 import org.http4s.client.Client
-import org.http4s.{ EntityDecoder, Uri }
+import org.http4s.Uri
+import com.alisiikh.catharsis.bot.json.Codecs
 
 import scala.language.postfixOps
 
@@ -65,9 +64,9 @@ class Http4sBotApi[F[_]: Concurrent: Logger](token: String, client: Client[F]) e
 }
 
 object Http4sBotApi {
-  import io.circe.generic.auto._
   import org.http4s.circe._
   import org.http4s._
+  import Codecs._
 
   implicit def decoder[F[_]: Concurrent]: EntityDecoder[F, BotResponse[List[BotUpdate]]] =
     jsonOf[F, BotResponse[List[BotUpdate]]]

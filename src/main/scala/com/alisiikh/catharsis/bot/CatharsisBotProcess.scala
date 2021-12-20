@@ -2,14 +2,12 @@ package com.alisiikh.catharsis.bot
 
 import cats.effect._
 import cats.implicits._
-import com.alisiikh.catharsis.bot.api.{ BotResponse, BotUpdate, Http4sBotApi }
+import com.alisiikh.catharsis.bot.api.Http4sBotApi
 import com.alisiikh.catharsis.giphy.GiphyClient
 import fs2.Stream
 import org.typelevel.log4cats.Logger
-import io.circe.generic.auto._
-import org.http4s._
 import org.http4s.blaze.client.BlazeClientBuilder
-import org.http4s.circe._
+import com.alisiikh.catharsis.bot.json.Codecs
 
 import scala.concurrent.ExecutionContext
 
