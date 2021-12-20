@@ -1,5 +1,6 @@
 package com.alisiikh.catharsis.bot
 
+import cats.Monad
 import cats.effect._
 import cats.implicits._
 import com.alisiikh.catharsis.bot.api._
@@ -24,8 +25,12 @@ class CatharsisBot[F[_]: Concurrent: Logger](api: StreamBotApi[F], giphy: GiphyC
         case (chatId, msg) =>
           giphy
             .randomGif(s"cat $msg")
-            .map(gifUrl => (chatId, gifUrl))
+            .map(
+              _.fold(
+                err => api.sendMessage(chatId, err),
+                gif => api.sendAnimation(chatId, gif)
+              )
+            )
       }
-      .evalMap((api.sendAnimation _).tupled)
       .void
 }

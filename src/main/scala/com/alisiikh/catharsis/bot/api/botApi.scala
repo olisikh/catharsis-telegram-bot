@@ -2,33 +2,46 @@ package com.alisiikh.catharsis.bot.api
 
 import cats.effect._
 import cats.implicits._
+import com.alisiikh.catharsis.bot.BotToken
 import fs2.Stream
 import org.typelevel.log4cats.Logger
 import org.http4s.blaze.http.Url
 import org.http4s.client.Client
-import org.http4s.Uri
 import com.alisiikh.catharsis.bot.json.Codecs
+import org.http4s.implicits._
 
 import scala.language.postfixOps
 
 trait BotApi[F[_], S[_]] {
   def sendAnimation(chatId: ChatId, message: String): F[Unit]
+  def sendMessage(chatId: ChatId, text: String): F[Unit]
   def pollUpdates(offset: Offset): S[BotUpdate]
 }
 
 trait StreamBotApi[F[_]] extends BotApi[F, Stream[F, *]]
 
-class Http4sBotApi[F[_]: Concurrent: Logger](token: String, client: Client[F]) extends StreamBotApi[F] {
-  import Http4sBotApi._
+class TelegramBotApi[F[_]: Concurrent: Logger](token: BotToken, client: Client[F]) extends StreamBotApi[F] {
+  import TelegramBotApi._
 
-  private val botApiUri = Uri.unsafeFromString(s"https://api.telegram.org/bot$token")
+  private val botApiUri = uri"https://api.telegram.org" / s"bot${token.value}"
 
   def sendAnimation(chatId: ChatId, animationUrl: Url): F[Unit] = {
-    val uri = botApiUri / "sendAnimation" =? Map(
+    val req = botApiUri / "sendAnimation" =? Map(
       "chat_id"   -> List(chatId.value.toString),
       "animation" -> List(animationUrl)
     )
-    client.expect[Unit](uri)
+
+    Logger[F].info(req.toString) *>
+      client.expect[Unit](req)
+  }
+
+  def sendMessage(chatId: ChatId, text: String): F[Unit] = {
+    val req = botApiUri / "sendMessage" =? Map(
+      "chat_id" -> List(chatId.value.toString),
+      "text"    -> List(text)
+    )
+
+    client.expect[Unit](req)
   }
 
   def pollUpdates(offset: Offset): Stream[F, BotUpdate] =
@@ -38,7 +51,6 @@ class Http4sBotApi[F[_]: Concurrent: Logger](token: String, client: Client[F]) e
       .flatMap { case (_, response) => Stream.emits(response.result) }
 
   private def requestUpdates(offset: Offset): F[(Offset, BotResponse[List[BotUpdate]])] = {
-
     val req = botApiUri / "getUpdates" =? Map(
       "offset"          -> List(offset.value.toString),
       "timeout"         -> List("0.5"), // timeout to throttle the polling
@@ -63,7 +75,7 @@ class Http4sBotApi[F[_]: Concurrent: Logger](token: String, client: Client[F]) e
   }
 }
 
-object Http4sBotApi {
+object TelegramBotApi {
   import org.http4s.circe._
   import org.http4s._
   import Codecs._
