@@ -2,3 +2,6 @@
 .bsp/
 target/
 .DS_Store
+
+# local dev file
+dev/env.sh
