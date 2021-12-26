@@ -18,18 +18,12 @@ class Bot[F[_]: Concurrent: Logger](telegramClient: TelegramClient[F], giphy: Gi
         .evalMapAccumulate(Offset(-1)) { case (offset, _) => telegramClient.requestUpdates(offset) }
         .flatMap { case (_, response) => Stream.emits(response.result) }
 
-      (chatId, text) <- Stream.fromOption {
-        (upd.chatId, upd.message.flatMap(_.text))
-          .mapN((chatId, text) => chatId -> text)
-      }
+      (chatId, text) <- Stream.fromOption((upd.chatId, upd.message.flatMap(_.text)).tupled)
 
       normalizedText = if (text.startsWith("/")) text.drop(1) else text
       tags           = normalizedText.split(' ').filterNot(_.isBlank).map(_.trim).toSet
 
       gifResult <- Stream.eval(giphy.randomGif(Set("cat") ++ tags))
-      _ <- Stream.eval(
-        // TODO: get actual gif an use sendAnimation
-        telegramClient.sendAnimation(chatId, gifResult.data.images.original.url)
-      )
+      _         <- Stream.eval(telegramClient.sendAnimation(chatId, gifResult.data.images.original.url))
     } yield ()
 }
