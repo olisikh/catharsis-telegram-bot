@@ -2,8 +2,9 @@ package com.alisiikh.catharsis
 
 import cats.effect._
 import cats.implicits._
-import com.alisiikh.catharsis.bot.{ BotProcess, BotToken }
+import com.alisiikh.catharsis.bot.BotProcess
 import com.alisiikh.catharsis.giphy.GiphyToken
+import com.alisiikh.catharsis.telegram.TelegramToken
 import fs2.Stream
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -14,7 +15,7 @@ object App extends IOApp {
 
   def stream[F[_]](args: List[String]): Stream[IO, Unit] =
     for {
-      token      <- Stream.eval(IO(BotToken(System.getenv("TELEGRAM_TOKEN"))))
+      token      <- Stream.eval(IO(TelegramToken(System.getenv("TELEGRAM_TOKEN"))))
       giphyToken <- Stream.eval(IO(GiphyToken(System.getenv("GIPHY_TOKEN"))))
       _          <- new BotProcess[IO](token, giphyToken).stream
     } yield ()

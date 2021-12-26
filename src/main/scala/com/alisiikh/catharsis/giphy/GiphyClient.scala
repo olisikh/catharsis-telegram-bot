@@ -1,25 +1,27 @@
 package com.alisiikh.catharsis.giphy
 
-import at.mukprojects.giphy4j.Giphy
-import cats.effect._
+import cats.effect.{ Concurrent, Sync }
 import cats.implicits._
+import cats.effect.implicits._
+import com.alisiikh.catharsis.giphy.GiphyAlgebra.Rating
+import com.alisiikh.catharsis.giphy.json.GiphyJsonCodecs
+import org.http4s.client.Client
+import org.http4s.implicits._
 import org.typelevel.log4cats.Logger
 
-class GiphyClient[F[_]: Sync: Logger](token: GiphyToken) extends GiphyClientAlgebra[F] {
+class GiphyClient[F[_]: Concurrent: Logger](giphyToken: GiphyToken, client: Client[F])
+    extends GiphyAlgebra[F]
+    with GiphyJsonCodecs {
 
-  type Error = String
+  private val giphyUri = uri"https://api.giphy.com"
 
-  def randomGif(theme: String): F[Either[Error, String]] =
-    giphyClient
-      .map(_.searchRandom(theme))
-      .flatMap(
-        resp =>
-          Logger[F].info(s"About to send for theme: $theme, gif: ${resp.getData.getUrl}") *>
-            Sync[F].delay {
-              Option(resp.getData.getUrl)
-                .toRight("Something is wrong with Giphy, apologies but no cats today")
-          }
-      )
+  override def randomGif(tags: Set[String], rating: Rating = Rating.G): F[GiphyResponse] = {
+    val req = giphyUri / "v1" / "gifs" / "random" =? Map(
+      "api_key" -> List(giphyToken.value),
+      "tag"     -> tags.toList,
+      "rating"  -> List(rating.value)
+    )
 
-  private def giphyClient: F[Giphy] = Sync[F].delay(new Giphy(token.value))
+    client.expect[GiphyResponse](req)
+  }
 }

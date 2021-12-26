@@ -1,4 +1,4 @@
-package com.alisiikh.catharsis.bot.api
+package com.alisiikh.catharsis.telegram
 
 case class ChatId(value: Long) extends AnyVal
 case class Offset(value: Long) extends AnyVal {
@@ -24,11 +24,11 @@ case class Message(
   def forwarded: Boolean = forward_from.isDefined
 }
 
-case class BotUpdate(
+case class TelegramUpdate(
     update_id: Long,
     message: Option[Message]
 ) {
   def chatId: Option[ChatId] = message.map(_.chat.id)
 }
 
-case class BotResponse[A](ok: Boolean, result: A)
+case class TelegramResponse[A](ok: Boolean, result: A)
