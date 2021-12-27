@@ -3,7 +3,7 @@ package com.alisiikh.catharsis.giphy
 import com.alisiikh.catharsis.giphy.GiphyAlgebra.Rating
 
 trait GiphyAlgebra[F[_]] {
-  def randomGif(tags: Set[String], rating: Rating): F[GiphyResponse]
+  def getRandomGif(tag: String, rating: Rating): F[GiphyResponse]
 }
 object GiphyAlgebra {
   sealed abstract class Rating(val value: String)

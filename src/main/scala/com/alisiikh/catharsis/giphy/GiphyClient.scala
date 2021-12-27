@@ -17,10 +17,10 @@ class GiphyClient[F[_]: Concurrent: Logger](giphyToken: GiphyToken, client: Clie
 
   private val giphyApiUri = uri"https://api.giphy.com"
 
-  override def randomGif(tags: Set[String], rating: Rating = Rating.G): F[GiphyResponse] = {
+  override def getRandomGif(tag: String, rating: Rating = Rating.R): F[GiphyResponse] = {
     val req = giphyApiUri / "v1" / "gifs" / "random" =? Map(
       "api_key" -> List(giphyToken.value),
-      "tag"     -> tags.toList,
+      "tag"     -> List(tag),
       "rating"  -> List(rating.value)
     )
 
