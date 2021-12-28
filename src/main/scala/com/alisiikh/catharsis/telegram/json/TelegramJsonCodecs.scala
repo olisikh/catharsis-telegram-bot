@@ -1,9 +1,9 @@
 package com.alisiikh.catharsis.telegram.json
 
 import com.alisiikh.catharsis.JsonCodecs
-import com.alisiikh.catharsis.telegram._
+import com.alisiikh.catharsis.telegram.*
 import io.circe.Decoder
-import io.circe.generic.semiauto._
+import io.circe.generic.semiauto.*
 
 trait TelegramJsonCodecs extends JsonCodecs:
   implicit val chatIdDec: Decoder[ChatId] = Decoder.decodeLong.map(ChatId.apply)

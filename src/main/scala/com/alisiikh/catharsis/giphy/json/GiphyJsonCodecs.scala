@@ -1,7 +1,7 @@
 package com.alisiikh.catharsis.giphy.json
 
 import com.alisiikh.catharsis.JsonCodecs
-import com.alisiikh.catharsis.giphy._
+import com.alisiikh.catharsis.giphy.*
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 

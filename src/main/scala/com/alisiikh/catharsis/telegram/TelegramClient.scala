@@ -1,16 +1,15 @@
 package com.alisiikh.catharsis.telegram
 
-import cats.implicits._
+import cats.implicits.*
 import cats.effect.Concurrent
 import com.alisiikh.catharsis.telegram.json.TelegramJsonCodecs
 import org.http4s.Request
 import org.http4s.blaze.http.Url
 import org.http4s.client.Client
-import org.http4s.implicits._
+import org.http4s.implicits.*
 import org.typelevel.log4cats.Logger
 
-class TelegramClient[F[_]](token: TelegramToken, client: Client[F])
-                          (using Concurrent[F], Logger[F])
+class TelegramClient[F[_]](token: TelegramToken, client: Client[F])(using Concurrent[F], Logger[F])
     extends TelegramBotAlgebra[F]
     with TelegramJsonCodecs:
 
@@ -26,11 +25,10 @@ class TelegramClient[F[_]](token: TelegramToken, client: Client[F])
     client
       .expect[TelegramResponse[List[TelegramUpdate]]](req)
       .map(resp => (lastOffset(resp).getOrElse(offset), resp))
-      .recoverWith {
-        case ex =>
-          Logger[F]
-            .error(ex)("Failed to poll updates")
-            .as(offset -> TelegramResponse(ok = true, Nil))
+      .recoverWith { case ex =>
+        Logger[F]
+          .error(ex)("Failed to poll updates")
+          .as(offset -> TelegramResponse(ok = true, Nil))
       }
 
   // just get the maximum id out of all received updates

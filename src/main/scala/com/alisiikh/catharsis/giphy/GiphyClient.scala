@@ -4,15 +4,12 @@ import cats.effect.Concurrent
 import com.alisiikh.catharsis.giphy.GiphyAlgebra.Rating
 import com.alisiikh.catharsis.giphy.json.GiphyJsonCodecs
 import org.http4s.client.Client
-import org.http4s.implicits._
+import org.http4s.implicits.*
 import org.typelevel.log4cats.Logger
 
-/**
-  * You can play with Giphy API here:
-  * https://developers.giphy.com/explorer/#explorer
+/** You can play with Giphy API here: https://developers.giphy.com/explorer/#explorer
   */
-class GiphyClient[F[_]](giphyToken: GiphyToken, client: Client[F])
-                       (using Concurrent[F], Logger[F])
+class GiphyClient[F[_]](giphyToken: GiphyToken, client: Client[F])(using Concurrent[F], Logger[F])
     extends GiphyAlgebra[F]
     with GiphyJsonCodecs:
 

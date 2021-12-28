@@ -1,16 +1,15 @@
 package com.alisiikh.catharsis.bot
 
-import cats.effect._
-import cats.implicits._
+import cats.effect.*
+import cats.implicits.*
 import com.alisiikh.catharsis.giphy.GiphyClient
 import com.alisiikh.catharsis.telegram.{ Offset, TelegramClient }
-import org.typelevel.log4cats._
-import fs2._
+import org.typelevel.log4cats.*
+import fs2.*
 
 import scala.language.postfixOps
 
-class Bot[F[_]](telegramClient: TelegramClient[F], giphy: GiphyClient[F])
-               (using Concurrent[F], Logger[F]):
+class Bot[F[_]](telegramClient: TelegramClient[F], giphy: GiphyClient[F])(using Concurrent[F], Logger[F]):
 
   private val startOffset = Offset(-1)
 

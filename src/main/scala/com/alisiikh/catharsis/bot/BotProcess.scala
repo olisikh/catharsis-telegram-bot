@@ -1,7 +1,7 @@
 package com.alisiikh.catharsis.bot
 
-import cats.effect._
-import cats.implicits._
+import cats.effect.*
+import cats.implicits.*
 import com.alisiikh.catharsis.giphy.{ GiphyClient, GiphyToken }
 import com.alisiikh.catharsis.telegram.{ TelegramClient, TelegramToken }
 import fs2.Stream
