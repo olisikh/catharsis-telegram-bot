@@ -19,7 +19,6 @@ lazy val root = (project in file("."))
       "co.fs2"        %% "fs2-core"            % "3.2.3",
       "io.circe"      %% "circe-core"          % circeVersion,
       "io.circe"      %% "circe-generic"       % circeVersion,
-      "at.mukprojects" % "giphy4j"             % "1.0.1",
       "org.slf4j"      % "slf4j-simple"        % slf4jVersion,
       "org.specs2"    %% "specs2-core"         % specs2Version % "test" cross CrossVersion.for3Use2_13
     )
