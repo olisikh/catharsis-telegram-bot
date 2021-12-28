@@ -4,6 +4,7 @@ import com.alisiikh.catharsis.giphy.GiphyAlgebra.Rating
 
 trait GiphyAlgebra[F[_]]:
   def getRandomGif(tag: String, rating: Rating): F[GiphyResponse]
+
 object GiphyAlgebra:
   sealed abstract class Rating(val value: String)
   object Rating:

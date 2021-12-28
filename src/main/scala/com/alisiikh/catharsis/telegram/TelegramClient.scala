@@ -9,7 +9,8 @@ import org.http4s.client.Client
 import org.http4s.implicits._
 import org.typelevel.log4cats.Logger
 
-class TelegramClient[F[_]: Concurrent: Logger](token: TelegramToken, client: Client[F])
+class TelegramClient[F[_]](token: TelegramToken, client: Client[F])
+                          (using Concurrent[F], Logger[F])
     extends TelegramBotAlgebra[F]
     with TelegramJsonCodecs:
 

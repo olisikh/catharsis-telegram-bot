@@ -9,7 +9,8 @@ import fs2._
 
 import scala.language.postfixOps
 
-class Bot[F[_]: Concurrent: Logger](telegramClient: TelegramClient[F], giphy: GiphyClient[F]):
+class Bot[F[_]](telegramClient: TelegramClient[F], giphy: GiphyClient[F])
+               (using Concurrent[F], Logger[F]):
 
   private val startOffset = Offset(-1)
 

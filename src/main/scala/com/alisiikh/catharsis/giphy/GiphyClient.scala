@@ -11,7 +11,8 @@ import org.typelevel.log4cats.Logger
   * You can play with Giphy API here:
   * https://developers.giphy.com/explorer/#explorer
   */
-class GiphyClient[F[_]: Concurrent: Logger](giphyToken: GiphyToken, client: Client[F])
+class GiphyClient[F[_]](giphyToken: GiphyToken, client: Client[F])
+                       (using Concurrent[F], Logger[F])
     extends GiphyAlgebra[F]
     with GiphyJsonCodecs:
 

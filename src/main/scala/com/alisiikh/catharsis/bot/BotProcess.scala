@@ -10,7 +10,7 @@ import org.http4s.blaze.client.BlazeClientBuilder
 
 import scala.concurrent.ExecutionContext
 
-class BotProcess[F[_]: Async: Logger](botToken: TelegramToken, giphyToken: GiphyToken):
+class BotProcess[F[_]](botToken: TelegramToken, giphyToken: GiphyToken)(using Async[F], Logger[F]):
 
   def stream: Stream[F, Unit] =
     for
