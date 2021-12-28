@@ -10,10 +10,10 @@ import org.http4s.blaze.client.BlazeClientBuilder
 
 import scala.concurrent.ExecutionContext
 
-class BotProcess[F[_]: Async: Logger](botToken: TelegramToken, giphyToken: GiphyToken) {
+class BotProcess[F[_]: Async: Logger](botToken: TelegramToken, giphyToken: GiphyToken):
 
   def stream: Stream[F, Unit] =
-    for {
+    for
       client <- BlazeClientBuilder[F](ExecutionContext.global)
         .withCheckEndpointAuthentication(false)
         .stream
@@ -23,5 +23,4 @@ class BotProcess[F[_]: Async: Logger](botToken: TelegramToken, giphyToken: Giphy
       bot   = new Bot(api, giphy)
 
       _ <- bot.stream
-    } yield ()
-}
+    yield ()

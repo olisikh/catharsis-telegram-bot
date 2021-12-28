@@ -13,11 +13,11 @@ import org.typelevel.log4cats.Logger
   */
 class GiphyClient[F[_]: Concurrent: Logger](giphyToken: GiphyToken, client: Client[F])
     extends GiphyAlgebra[F]
-    with GiphyJsonCodecs {
+    with GiphyJsonCodecs:
 
   private val giphyApiUri = uri"https://api.giphy.com"
 
-  override def getRandomGif(tag: String, rating: Rating = Rating.R): F[GiphyResponse] = {
+  override def getRandomGif(tag: String, rating: Rating = Rating.R): F[GiphyResponse] =
     val req = giphyApiUri / "v1" / "gifs" / "random" =? Map(
       "api_key" -> List(giphyToken.value),
       "tag"     -> List(tag),
@@ -25,5 +25,3 @@ class GiphyClient[F[_]: Concurrent: Logger](giphyToken: GiphyToken, client: Clie
     )
 
     client.expect[GiphyResponse](req)
-  }
-}

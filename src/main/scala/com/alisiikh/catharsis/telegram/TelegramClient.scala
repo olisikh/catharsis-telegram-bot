@@ -11,11 +11,11 @@ import org.typelevel.log4cats.Logger
 
 class TelegramClient[F[_]: Concurrent: Logger](token: TelegramToken, client: Client[F])
     extends TelegramBotAlgebra[F]
-    with TelegramJsonCodecs {
+    with TelegramJsonCodecs:
 
   private val botApiUri = uri"https://api.telegram.org" / s"bot${token.value}"
 
-  override def requestUpdates(offset: Offset): F[(Offset, TelegramResponse[List[TelegramUpdate]])] = {
+  override def requestUpdates(offset: Offset): F[(Offset, TelegramResponse[List[TelegramUpdate]])] =
     val req = botApiUri / "getUpdates" =? Map(
       "offset"          -> List(offset.value.toString),
       "timeout"         -> List("0.5"), // timeout to throttle the polling
@@ -31,16 +31,14 @@ class TelegramClient[F[_]: Concurrent: Logger](token: TelegramToken, client: Cli
             .error(ex)("Failed to poll updates")
             .as(offset -> TelegramResponse(ok = true, Nil))
       }
-  }
 
   // just get the maximum id out of all received updates
   private def lastOffset(resp: TelegramResponse[List[TelegramUpdate]]): Option[Offset] =
-    resp.result match {
+    resp.result match
       case Nil   => none
       case other => Offset(other.maxBy(_.update_id).update_id).inc.some
-    }
 
-  override def sendAnimation(chatId: ChatId, animationUrl: Url): F[Unit] = {
+  override def sendAnimation(chatId: ChatId, animationUrl: Url): F[Unit] =
     val uri = botApiUri / "sendAnimation" =? Map(
       "chat_id"   -> List(chatId.value.toString),
       "animation" -> List(animationUrl)
@@ -48,9 +46,8 @@ class TelegramClient[F[_]: Concurrent: Logger](token: TelegramToken, client: Cli
     val req = Request[F](uri = uri)
 
     client.status(req).void
-  }
 
-  override def sendMessage(chatId: ChatId, text: String): F[Unit] = {
+  override def sendMessage(chatId: ChatId, text: String): F[Unit] =
     val uri = botApiUri / "sendMessage" =? Map(
       "chat_id" -> List(chatId.value.toString),
       "text"    -> List(text)
@@ -58,5 +55,3 @@ class TelegramClient[F[_]: Concurrent: Logger](token: TelegramToken, client: Cli
     val req = Request[F](uri = uri)
 
     client.expect[Unit](req)
-  }
-}
