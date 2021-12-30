@@ -7,7 +7,8 @@ lazy val root = (project in file("."))
     version      := "1.0.0-SNAPSHOT",
     scalaVersion := "3.1.0",
     scalacOptions := Seq(
-      "-Ykind-projector"
+      "-Ykind-projector",
+      "-indent"
     ),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect-kernel"  % catsEffectVersion,
@@ -19,6 +20,7 @@ lazy val root = (project in file("."))
       "co.fs2"        %% "fs2-core"            % "3.2.3",
       "io.circe"      %% "circe-core"          % circeVersion,
       "io.circe"      %% "circe-generic"       % circeVersion,
+      "at.mukprojects" % "giphy4j"             % "1.0.1",
       "org.slf4j"      % "slf4j-simple"        % slf4jVersion,
       "org.specs2"    %% "specs2-core"         % specs2Version % "test" cross CrossVersion.for3Use2_13
     )
