@@ -6,11 +6,9 @@ import io.circe.Decoder
 import io.circe.generic.semiauto.*
 
 trait TelegramJsonCodecs extends JsonCodecs:
-  implicit val chatIdDec: Decoder[ChatId] = Decoder.decodeLong.map(ChatId.apply)
-
-  implicit val chatDec: Decoder[Chat]                     = deriveDecoder[Chat]
-  implicit val userDec: Decoder[User]                     = deriveDecoder[User]
-  implicit val msgDec: Decoder[Message]                   = deriveDecoder[Message]
-  implicit val telegramUpdateDec: Decoder[TelegramUpdate] = deriveDecoder[TelegramUpdate]
-
-  implicit def telegramRespDec[A: Decoder]: Decoder[TelegramResponse[A]] = deriveDecoder[TelegramResponse[A]]
+  given Decoder[ChatId]                            = Decoder.decodeLong.map(ChatId.apply)
+  given Decoder[Chat]                              = deriveDecoder[Chat]
+  given Decoder[User]                              = deriveDecoder[User]
+  given Decoder[Message]                           = deriveDecoder[Message]
+  given Decoder[TelegramUpdate]                    = deriveDecoder[TelegramUpdate]
+  given [A: Decoder]: Decoder[TelegramResponse[A]] = deriveDecoder[TelegramResponse[A]]
