@@ -2,6 +2,7 @@ package com.alisiikh.catharsis.telegram
 
 import cats.implicits.*
 import cats.effect.Concurrent
+import com.alisiikh.catharsis.telegram.TelegramTokens.*
 import com.alisiikh.catharsis.telegram.json.TelegramJsonCodecs
 import org.http4s.Request
 import org.http4s.blaze.http.Url
