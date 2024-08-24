@@ -1,25 +1,42 @@
 package com.alisiikh.catharsis.giphy
 
-import cats.effect.Concurrent
-import com.alisiikh.catharsis.giphy.GiphyAlgebra.Rating
-import com.alisiikh.catharsis.giphy.json.GiphyJsonCodecs
-import org.http4s.client.Client
-import org.http4s.implicits.*
-import org.typelevel.log4cats.Logger
-import GiphyTokens.*
+import com.alisiikh.catharsis.AppConfig
+
+import sttp.client3.*
+import sttp.client3.circe.*
+import zio.*
 
 /** You can play with Giphy API here: https://developers.giphy.com/explorer/#explorer
   */
-class GiphyClient[F[_]](giphyToken: GiphyToken, client: Client[F])(using Concurrent[F], Logger[F])
-    extends GiphyAlgebra[F]
-    with GiphyJsonCodecs:
+class GiphyClient(token: String):
+  import GiphyJsonCodecs.given
+  import GiphyClient.*
 
   private val giphyApiUri = uri"https://api.giphy.com"
 
-  override def getRandomGif(tag: String, rating: Rating = Rating.R): F[GiphyResponse] =
-    val req = giphyApiUri / "v1" / "gifs" / "random" =? Map(
-      "api_key" -> List(giphyToken.value),
-      "tag"     -> List(tag),
-      "rating"  -> List(rating.value)
+  def getRandomGif(tag: String, rating: Rating = Rating.R): ZIO[SttpBackend[Task, Any], Throwable, GiphyResponse] =
+    for
+      backend <- ZIO.service[SttpBackend[Task, Any]]
+      response <- basicRequest
+        .get(uri"https://api.giphy.com/v1/gifs/random?api_key=$token&tag=$tag&rating=${rating.value}")
+        .response(asJson[GiphyResponse])
+        .send(backend)
+
+      body <- ZIO
+        .fromEither(response.body)
+        .mapError(err => new RuntimeException("Failed to fetch random gif, error: $err"))
+    yield body
+
+object GiphyClient:
+  sealed abstract class Rating(val value: String)
+  object Rating:
+    case object G    extends Rating("g")
+    case object PG   extends Rating("pg")
+    case object PG13 extends Rating("pg-13")
+    case object R    extends Rating("r")
+
+  def live: RLayer[AppConfig, GiphyClient] =
+    ZLayer.fromZIO(
+      for config <- ZIO.service[AppConfig]
+      yield GiphyClient(config.giphyToken)
     )
-    client.expect[GiphyResponse](req)

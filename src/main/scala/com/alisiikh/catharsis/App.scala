@@ -1,23 +1,33 @@
 package com.alisiikh.catharsis
 
-import cats.effect.*
+import zio.*
+import sttp.client3.asynchttpclient.zio.AsyncHttpClientZioBackend
+import zio.stream.*
 import cats.implicits.*
-import com.alisiikh.catharsis.bot.BotProcess
-import com.alisiikh.catharsis.giphy.GiphyTokens
-import com.alisiikh.catharsis.telegram.TelegramTokens
-import fs2.Stream
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
+import com.alisiikh.catharsis.bot.*
+import com.alisiikh.catharsis.giphy.*
+import com.alisiikh.catharsis.telegram.*
+import sttp.client3.*
+import sttp.client3.asynchttpclient.zio.*
+import zio.logging.backend.SLF4J
 
-object App extends IOApp:
-  given Logger[IO] = Slf4jLogger.getLogger[IO]
+object App extends ZIOAppDefault:
 
-  def stream[F[_]](args: List[String]): Stream[IO, Unit] =
-    for
-      telegramToken <- Stream.eval(IO(TelegramTokens.make(System.getenv("TELEGRAM_TOKEN"))))
-      giphyToken    <- Stream.eval(IO(GiphyTokens.make(System.getenv("GIPHY_TOKEN"))))
-      _             <- new BotProcess[IO](telegramToken, giphyToken).stream
-    yield ()
+  type AppEnv = SttpBackend[Task, Any] & TelegramClient & GiphyClient
 
-  override def run(args: List[String]): IO[ExitCode] =
-    stream[IO](args).compile.drain.as(ExitCode.Success)
+  override val bootstrap: ZLayer[ZIOAppArgs, Any, Any] =
+    Runtime.removeDefaultLoggers >>> SLF4J.slf4j
+
+  def layer: TaskLayer[AppEnv] =
+    AsyncHttpClientZioBackend.layer() >+> (
+      AppConfig.live >>> (
+        TelegramClient.live ++ GiphyClient.live
+      )
+    )
+
+  override def run: Task[ExitCode] =
+    Bot
+      .stream()
+      .run(ZSink.drain)
+      .provideLayer(layer)
+      .as(ExitCode.success)

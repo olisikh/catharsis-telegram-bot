@@ -1,36 +1,36 @@
 package com.alisiikh.catharsis.telegram
 
+import com.alisiikh.catharsis.AppConfig
 import cats.implicits.*
-import cats.effect.Concurrent
-import com.alisiikh.catharsis.telegram.TelegramTokens.*
 import com.alisiikh.catharsis.telegram.json.TelegramJsonCodecs
-import org.http4s.Request
-import org.http4s.blaze.http.Url
-import org.http4s.client.Client
-import org.http4s.implicits.*
-import org.typelevel.log4cats.Logger
+import sttp.client3.*
+import sttp.client3.circe.*
+import zio.*
+import java.net.URL
 
-class TelegramClient[F[_]](token: TelegramToken, client: Client[F])(using Concurrent[F], Logger[F])
-    extends TelegramBotAlgebra[F]
-    with TelegramJsonCodecs:
+class TelegramClient(token: String):
+  import TelegramJsonCodecs.given
 
-  private val botApiUri = uri"https://api.telegram.org" / s"bot${token.value}"
+  def requestUpdates(
+      offset: Offset
+  ): ZIO[SttpBackend[Task, Any], Throwable, (Offset, TelegramResponse[List[TelegramUpdate]])] =
+    (
+      for
+        client <- ZIO.service[SttpBackend[Task, Any]]
+        resp <- basicRequest
+          .get(uri"https://api.telegram.org/bot$token/getUpdates")
+          .response(asJson[TelegramResponse[List[TelegramUpdate]]])
+          .send(client)
 
-  override def requestUpdates(offset: Offset): F[(Offset, TelegramResponse[List[TelegramUpdate]])] =
-    val req = botApiUri / "getUpdates" =? Map(
-      "offset"          -> List(offset.value.toString),
-      "timeout"         -> List("0.5"), // timeout to throttle the polling
-      "allowed_updates" -> List("""["message"]""")
-    )
-
-    client
-      .expect[TelegramResponse[List[TelegramUpdate]]](req)
-      .map(resp => (lastOffset(resp).getOrElse(offset), resp))
-      .recoverWith { case ex =>
-        Logger[F]
-          .error(ex)("Failed to poll updates")
-          .as(offset -> TelegramResponse(ok = true, Nil))
-      }
+        body <- ZIO
+          .fromEither(resp.body)
+          .mapError(err => new RuntimeException(s"Failed to fetch updates, error: $err"))
+      yield offset -> body
+    ).catchAll { case ex =>
+      ZIO
+        .logErrorCause("Failed to poll updates", Cause.fail(ex))
+        .as(offset -> TelegramResponse(ok = true, Nil))
+    }
 
   // just get the maximum id out of all received updates
   private def lastOffset(resp: TelegramResponse[List[TelegramUpdate]]): Option[Offset] =
@@ -38,20 +38,27 @@ class TelegramClient[F[_]](token: TelegramToken, client: Client[F])(using Concur
       case Nil   => none
       case other => Offset(other.maxBy(_.update_id).update_id).inc.some
 
-  override def sendAnimation(chatId: ChatId, animationUrl: Url): F[Unit] =
-    val uri = botApiUri / "sendAnimation" =? Map(
-      "chat_id"   -> List(chatId.value.toString),
-      "animation" -> List(animationUrl)
+  def sendAnimation(chatId: ChatId, animationUrl: String): ZIO[SttpBackend[Task, Any], Throwable, Unit] =
+    for
+      client <- ZIO.service[SttpBackend[Task, Any]]
+      resp <- basicRequest
+        .post(uri"https://api.telegram.org/bot$token/sendAnimation?chat_id=$chatId&animation=$animationUrl")
+        .response(asJson[Unit])
+        .send(client)
+    yield ()
+
+  def sendMessage(chatId: ChatId, text: String): ZIO[SttpBackend[Task, Any], Throwable, Unit] =
+    for
+      client <- ZIO.service[SttpBackend[Task, Any]]
+      resp <- basicRequest
+        .post(uri"https://api.telegram.org/bot$token/sendMessage?chat_id=$chatId&text=$text")
+        .response(asJson[Unit])
+        .send(client)
+    yield ()
+
+object TelegramClient:
+  def live: RLayer[AppConfig, TelegramClient] =
+    ZLayer.fromZIO(
+      for config <- ZIO.service[AppConfig]
+      yield TelegramClient(config.telegramToken)
     )
-    val req = Request[F](uri = uri)
-
-    client.status(req).void
-
-  override def sendMessage(chatId: ChatId, text: String): F[Unit] =
-    val uri = botApiUri / "sendMessage" =? Map(
-      "chat_id" -> List(chatId.value.toString),
-      "text"    -> List(text)
-    )
-    val req = Request[F](uri = uri)
-
-    client.expect[Unit](req)

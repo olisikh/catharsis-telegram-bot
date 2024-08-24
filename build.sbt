@@ -1,26 +1,34 @@
-import Dependencies._
+val http4sVersion     = "1.0.0-M23"
+val specs2Version     = "4.13.1"
+val log4CatsVersion   = "2.1.1"
+val slf4jVersion      = "1.7.32"
+val circeVersion      = "0.14.1"
+val catsEffectVersion = "3.3.0"
+val zioVersion        = "2.1.8"
+val sttpVersion       = "3.9.8"
+
+ThisBuild / scalaVersion := "3.5.0"
 
 lazy val root = (project in file("."))
   .settings(
     organization := "com.alisiikh",
     name         := "catharsis-telegram-bot",
     version      := "1.0.0-SNAPSHOT",
-    scalaVersion := "3.1.0",
+    scalaVersion := "3.5.0",
     scalacOptions := Seq(
-      "-Ykind-projector",
+      "-new-syntax",
       "-indent"
     ),
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect-kernel"  % catsEffectVersion,
-      "org.typelevel" %% "cats-effect-std"     % catsEffectVersion,
-      "org.typelevel" %% "cats-effect"         % catsEffectVersion,
-      "org.typelevel" %% "log4cats-slf4j"      % log4CatsVersion,
-      "org.slf4j"      % "slf4j-simple"        % slf4jVersion,
-      "org.http4s"    %% "http4s-blaze-client" % http4sVersion,
-      "org.http4s"    %% "http4s-circe"        % http4sVersion,
-      "co.fs2"        %% "fs2-core"            % "3.2.3",
-      "io.circe"      %% "circe-core"          % circeVersion,
-      "io.circe"      %% "circe-generic"       % circeVersion
+      "dev.zio"                       %% "zio"                % zioVersion,
+      "dev.zio"                       %% "zio-logging-slf4j2" % "2.3.1",
+      "com.softwaremill.sttp.client3" %% "core"               % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "circe"              % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "zio"                % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "async-http-client-backend-zio" % sttpVersion,
+      "org.slf4j"                      % "slf4j-simple"       % slf4jVersion,
+      "io.circe"                      %% "circe-core"         % circeVersion,
+      "io.circe"                      %% "circe-generic"      % circeVersion,
     )
   )
 
