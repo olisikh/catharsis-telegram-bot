@@ -1,6 +1,8 @@
 package com.alisiikh.catharsis.telegram
 
-case class ChatId(value: Long) extends AnyVal
+case class ChatId(value: Long) extends AnyVal:
+  override def toString: String = value.toString
+
 case class Offset(value: Long) extends AnyVal:
   def inc: Offset = copy(value = value + 1)
 

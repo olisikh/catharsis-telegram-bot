@@ -20,15 +20,15 @@ lazy val root = (project in file("."))
       "-indent"
     ),
     libraryDependencies ++= Seq(
-      "dev.zio"                       %% "zio"                % zioVersion,
-      "dev.zio"                       %% "zio-logging-slf4j2" % "2.3.1",
-      "com.softwaremill.sttp.client3" %% "core"               % sttpVersion,
-      "com.softwaremill.sttp.client3" %% "circe"              % sttpVersion,
-      "com.softwaremill.sttp.client3" %% "zio"                % sttpVersion,
+      "dev.zio"                       %% "zio"                           % zioVersion,
+      "dev.zio"                       %% "zio-logging-slf4j"            % "2.3.1",
+      "ch.qos.logback"                 % "logback-classic"               % "1.2.13",
+      "com.softwaremill.sttp.client3" %% "core"                          % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "circe"                         % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "zio"                           % sttpVersion,
       "com.softwaremill.sttp.client3" %% "async-http-client-backend-zio" % sttpVersion,
-      "org.slf4j"                      % "slf4j-simple"       % slf4jVersion,
-      "io.circe"                      %% "circe-core"         % circeVersion,
-      "io.circe"                      %% "circe-generic"      % circeVersion,
+      "io.circe"                      %% "circe-core"                    % circeVersion,
+      "io.circe"                      %% "circe-generic"                 % circeVersion
     )
   )
 

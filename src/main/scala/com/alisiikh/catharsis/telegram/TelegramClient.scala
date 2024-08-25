@@ -42,7 +42,7 @@ class TelegramClient(token: String):
     for
       client <- ZIO.service[SttpBackend[Task, Any]]
       resp <- basicRequest
-        .post(uri"https://api.telegram.org/bot$token/sendAnimation?chat_id=$chatId&animation=$animationUrl")
+        .get(uri"https://api.telegram.org/bot$token/sendAnimation?chat_id=$chatId&animation=$animationUrl")
         .response(asJson[Unit])
         .send(client)
     yield ()
@@ -51,7 +51,7 @@ class TelegramClient(token: String):
     for
       client <- ZIO.service[SttpBackend[Task, Any]]
       resp <- basicRequest
-        .post(uri"https://api.telegram.org/bot$token/sendMessage?chat_id=$chatId&text=$text")
+        .get(uri"https://api.telegram.org/bot$token/sendMessage?chat_id=$chatId&text=$text")
         .response(asJson[Unit])
         .send(client)
     yield ()
