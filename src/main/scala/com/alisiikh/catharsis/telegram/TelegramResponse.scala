@@ -23,6 +23,11 @@ case class Message(
     forward_from: Option[User]
 ):
   def forwarded: Boolean = forward_from.isDefined
+  def tokenized: List[String] =
+    text.toList
+      .flatMap(text => (if text.startsWith("/") then text.drop(1) else text).split(' '))
+      .map(_.trim)
+      .filterNot(_.isBlank)
 
 case class TelegramUpdate(
     update_id: Long,

@@ -18,14 +18,16 @@ class TelegramClient(token: String):
       for
         client <- ZIO.service[SttpBackend[Task, Any]]
         resp <- basicRequest
-          .get(uri"https://api.telegram.org/bot$token/getUpdates")
+          .get(uri"https://api.telegram.org/bot$token/getUpdates?offset=${offset.value}")
           .response(asJson[TelegramResponse[List[TelegramUpdate]]])
           .send(client)
 
         body <- ZIO
           .fromEither(resp.body)
           .mapError(err => new RuntimeException(s"Failed to fetch updates, error: $err"))
-      yield offset -> body
+
+        nextOffset = lastOffset(body).getOrElse(offset)
+      yield nextOffset -> body
     ).catchAll { case ex =>
       ZIO
         .logErrorCause("Failed to poll updates", Cause.fail(ex))

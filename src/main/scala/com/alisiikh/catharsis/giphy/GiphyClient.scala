@@ -1,10 +1,13 @@
 package com.alisiikh.catharsis.giphy
 
 import com.alisiikh.catharsis.AppConfig
+import cats.implicits.*
 
 import sttp.client3.*
 import sttp.client3.circe.*
 import zio.*
+import io.circe.*
+import io.circe.DecodingFailure.Reason
 
 /** You can play with Giphy API here: https://developers.giphy.com/explorer/#explorer
   */
@@ -12,9 +15,10 @@ class GiphyClient(token: String):
   import GiphyJsonCodecs.given
   import GiphyClient.*
 
-  private val giphyApiUri = uri"https://api.giphy.com"
-
-  def getRandomGif(tag: String, rating: Rating = Rating.R): ZIO[SttpBackend[Task, Any], Throwable, GiphyResponse] =
+  def getRandomGif(
+      tag: String,
+      rating: Rating = Rating.R
+  ): ZIO[SttpBackend[Task, Any], Throwable, Option[String]] =
     for
       backend <- ZIO.service[SttpBackend[Task, Any]]
       response <- basicRequest
@@ -22,10 +26,13 @@ class GiphyClient(token: String):
         .response(asJson[GiphyResponse])
         .send(backend)
 
-      body <- ZIO
+      url <- ZIO
         .fromEither(response.body)
-        .mapError(err => new RuntimeException("Failed to fetch random gif, error: $err"))
-    yield body
+        .map(_.data.images.original.url)
+        .tapError(err => ZIO.logWarning(s"Failed to fetch random gif, error: $err"))
+        .either
+        .map(_.toOption)
+    yield url
 
 object GiphyClient:
   sealed abstract class Rating(val value: String)
